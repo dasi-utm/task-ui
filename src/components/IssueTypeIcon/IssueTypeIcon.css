@@ -1,0 +1,17 @@
+.issue-type-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-icon);
+  flex-shrink: 0;
+  align-self: center;
+  background-color: var(--bg-card);
+}
+
+.issue-type-icon__img {
+  width: 20px;
+  height: 20px;
+}

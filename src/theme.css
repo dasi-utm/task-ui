@@ -1,0 +1,58 @@
+:root {
+  --bg-primary: #fff;
+  --bg-secondary: #f4f5f7;
+  --bg-card: #ffffff;
+  --text-primary: #0d0d0d;
+  --text-secondary: #3d3d3d;
+  --text-tertiary: #5d5d5d;
+  --border-default: rgba(13, 13, 13, 0.1);
+  --status-text: #292a2e;
+  --status-new-bg: #dddee1;
+  --status-indeterminate-bg: #8fb8f6;
+  --status-done-bg: #b3df72;
+  --tooltip-bg: #000;
+  --tooltip-text: #fff;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --radius-card: 12px;
+  --radius-badge: 4px;
+  --radius-icon: 10px;
+  --transition-fast: 0.15s ease;
+}
+
+html.dark {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #252525;
+  --bg-card: #2a2a2a;
+  --text-primary: #fff;
+  --text-secondary: #cdcdcd;
+  --text-tertiary: #afafaf;
+  --border-default: rgba(255, 255, 255, 0.15);
+  --status-text: #292a2e;
+  --status-new-bg: #dddee1;
+  --status-indeterminate-bg: #8fb8f6;
+  --status-done-bg: #b3df72;
+  --tooltip-bg: #000;
+  --tooltip-text: #fff;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

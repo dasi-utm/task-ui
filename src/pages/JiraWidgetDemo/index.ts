@@ -1,0 +1,1 @@
+export { JiraWidgetDemo } from './JiraWidgetDemo';

@@ -1,0 +1,27 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  border-radius: var(--radius-badge);
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.status-badge--new {
+  background-color: var(--status-new-bg);
+  color: var(--status-text);
+}
+
+.status-badge--indeterminate {
+  background-color: var(--status-indeterminate-bg);
+  color: var(--status-text);
+}
+
+.status-badge--done {
+  background-color: var(--status-done-bg);
+  color: var(--status-text);
+}
