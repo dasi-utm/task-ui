@@ -13,3 +13,9 @@ services:
       - ..:/app
       - /app/node_modules
     restart: unless-stopped
+    networks:
+      - taskflow-net
+
+networks:
+  taskflow-net:
+    external: true
