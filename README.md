@@ -98,13 +98,26 @@ All variables must be prefixed with `VITE_` to be exposed to client-side code. A
 
 ## Docker
 
+Compose files live in `deployment/`. The `Dockerfile` uses multi-stage builds — `target` selects the environment.
+
 **Development** (source mounted, Vite HMR):
 
 ```bash
-docker compose up
+docker compose -f deployment/docker-compose.dev.yml up
 ```
 
-**Production image** (static files served by nginx):
+**Production** (`VITE_*` vars baked into the bundle at build time, served by nginx on port 80):
+
+```bash
+# Copy and fill in required vars first
+cp deployment/.env.prod.example deployment/.env.prod
+
+docker compose -f deployment/docker-compose.prod.yml --env-file deployment/.env.prod up
+```
+
+Required env vars for prod: `VITE_API_URL`, `VITE_SIGNALR_URL`.
+
+**Build the production image standalone:**
 
 ```bash
 docker build --target production \
@@ -115,9 +128,9 @@ docker build --target production \
 docker run -p 80:80 task-ui
 ```
 
-`VITE_*` variables are baked into the static bundle at build time — pass them as `--build-arg` when building the production image.
+`VITE_*` variables are baked into the static bundle at build time — they must be passed as `--build-arg`, not as runtime `-e` flags.
 
-The `docker-compose.yml` in this directory runs the Vite dev server only. To run the full stack with all services see the root `docker-compose.yml`.
+To run the full stack with all three services, use the compose files in the root `deployment/` folder.
 
 ---
 

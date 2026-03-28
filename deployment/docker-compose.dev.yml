@@ -1,9 +1,8 @@
 services:
   task-ui:
     build:
-      context: .
+      context: ..
       target: deps
-    # --host exposes the Vite dev server to all interfaces inside the container
     command: npm run dev -- --host
     ports:
       - "3000:3000"
@@ -11,6 +10,6 @@ services:
       VITE_API_URL: http://localhost:3001/api/v1
       VITE_SIGNALR_URL: http://localhost:3001/hubs/tasks
     volumes:
-      - .:/app
+      - ..:/app
       - /app/node_modules
     restart: unless-stopped
