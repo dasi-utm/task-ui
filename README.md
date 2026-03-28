@@ -69,7 +69,7 @@ The app will be available at `http://localhost:3000`.
 
 ## Environment variables
 
-Create a `.env.local` file in the project root (Vite ignores `.env.local` in version control by convention):
+Create a `.env` file in the deployment/config: (Still todo, right now it auto reads from compose file)
 
 ```env
 VITE_API_URL=http://localhost:3001/api/v1
@@ -110,9 +110,9 @@ docker compose -f deployment/docker-compose.dev.yml up
 
 ```bash
 # Copy and fill in required vars first
-cp deployment/.env.prod.example deployment/.env.prod
+cp deployment/config/.env.prod.example deployment/config/.env.prod
 
-docker compose -f deployment/docker-compose.prod.yml --env-file deployment/.env.prod up
+docker compose -f deployment/containers/docker-compose.prod.yml --env-file deployment/config/.env.prod up
 ```
 
 Required env vars for prod: `VITE_API_URL`, `VITE_SIGNALR_URL`.
@@ -129,9 +129,6 @@ docker run -p 80:80 task-ui
 ```
 
 `VITE_*` variables are baked into the static bundle at build time — they must be passed as `--build-arg`, not as runtime `-e` flags.
-
-To run the full stack with all three services, use the compose files in the root `deployment/` folder.
-
 ---
 
 ## Pages and routing
