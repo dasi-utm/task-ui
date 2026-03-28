@@ -1,7 +1,7 @@
 services:
   task-ui:
     build:
-      context: ..
+      context: ../../
       target: production
       args:
         VITE_API_URL: ${VITE_API_URL} # set up as env secret
