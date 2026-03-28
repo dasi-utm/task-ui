@@ -4,8 +4,8 @@ services:
       context: ..
       target: production
       args:
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_SIGNALR_URL: ${VITE_SIGNALR_URL}
+        VITE_API_URL: ${VITE_API_URL} # set up as env secret
+        VITE_SIGNALR_URL: ${VITE_SIGNALR_URL} # set up as env secret
     ports:
       - "80:80"
     restart: unless-stopped
