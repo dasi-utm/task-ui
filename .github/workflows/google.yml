@@ -3,6 +3,7 @@ name: Build and Deploy UI to GKE
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -25,9 +26,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/164463771608/locations/global/workloadIdentityPools/github/providers/github-provider
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -53,8 +53,7 @@ jobs:
           location: ${{ secrets.GKE_LOCATION }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-
       - name: Deploy image
         run: |
-          kubectl set image deployment/ui ui=$IMAGE_URI -n default
-          kubectl rollout status deployment/ui -n default
+          kubectl set image deployment/ui ui=$IMAGE_URI -n ui
+          kubectl rollout status deployment/ui -n ui
