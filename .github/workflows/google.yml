@@ -28,6 +28,7 @@ jobs:
           workload_identity_provider: projects/164463771608/locations/global/workloadIdentityPools/github/providers/github-provider
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
+
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
@@ -47,6 +48,10 @@ jobs:
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER }}
+          location: ${{ secrets.GKE_LOCATION }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
 
       - name: Deploy image
