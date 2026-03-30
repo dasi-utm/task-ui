@@ -45,6 +45,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ env.IMAGE_URI }}
+          build-args: |
+            VITE_API_URL=/api/v1
 
       - name: Get GKE credentials
         uses: google-github-actions/get-gke-credentials@v2

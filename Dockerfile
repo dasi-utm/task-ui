@@ -1,19 +1,16 @@
-# Stage 1: Install all dependencies
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS build
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm ci
 
-# Stage 2: Build static assets
-FROM deps AS builder
 COPY . .
+
 ARG VITE_API_URL
-ARG VITE_SIGNALR_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
-# Stage 3: Production image (nginx)
-FROM nginx:1.27-alpine AS production
-COPY --from=builder /app/dist /usr/share/nginx/html
+FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+COPY --from=build /app/dist /usr/share/nginx/html
