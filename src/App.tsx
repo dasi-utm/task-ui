@@ -31,7 +31,7 @@ export const App = () => {
         />
         <Route path="/jira-widget" element={<JiraWidgetDemo />} />
         <Route
-          path="/analytics"
+          path="/metrics"
           element={
             <ProtectedRoute>
               <Analytics />
