@@ -9,6 +9,7 @@ import type {
   UserStatisticsDto,
   TimelineStatisticsDto,
 } from '../types/task';
+import type { TaskMetrics, TrendPoint, PerformanceMetrics } from '../types/analytics';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1',
@@ -116,6 +117,29 @@ export const adminService = {
   },
   changeRole: async (userId: string, role: string): Promise<UserDto> => {
     const { data } = await apiClient.patch<UserDto>(`/admin/users/${userId}/role`, { role });
+    return data;
+  },
+};
+
+// Analytics (separate microservice on port 3003)
+const analyticsClient = axios.create({
+  baseURL: import.meta.env.VITE_ANALYTICS_URL || 'http://localhost:3003/api',
+  headers: { 'Content-Type': 'application/json' },
+});
+
+export const analyticsService = {
+  getMetrics: async (): Promise<TaskMetrics> => {
+    const { data } = await analyticsClient.get<TaskMetrics>('/analytics/metrics');
+    return data;
+  },
+  getTrends: async (hours = 24): Promise<TrendPoint[]> => {
+    const { data } = await analyticsClient.get<TrendPoint[]>('/analytics/trends', {
+      params: { hours },
+    });
+    return data;
+  },
+  getPerformance: async (): Promise<PerformanceMetrics> => {
+    const { data } = await analyticsClient.get<PerformanceMetrics>('/analytics/performance');
     return data;
   },
 };

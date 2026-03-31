@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
+import { Analytics } from './pages/Analytics';
 import { JiraWidgetDemo } from './pages/JiraWidgetDemo';
 
 export const App = () => {
@@ -29,6 +30,14 @@ export const App = () => {
           }
         />
         <Route path="/jira-widget" element={<JiraWidgetDemo />} />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/" element={<Navigate to={token ? '/dashboard' : '/login'} replace />} />
       </Routes>
     </BrowserRouter>
