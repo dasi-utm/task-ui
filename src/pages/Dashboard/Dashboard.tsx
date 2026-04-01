@@ -212,7 +212,11 @@ export const Dashboard = () => {
                   ))}
                   <button
                     className="btn-sm btn-danger"
-                    onClick={() => deleteTask(task.id)}
+                    onClick={() => {
+                      if (window.confirm(`Delete "${task.title}"? This cannot be undone.`)) {
+                        deleteTask(task.id);
+                      }
+                    }}
                   >
                     Delete
                   </button>

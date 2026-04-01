@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { authService } from '../services/api';
 import type { UserDto } from '../types/user';
+import { parseApiError } from '../utils/parseApiError';
 
 interface AuthState {
   user: UserDto | null;
@@ -43,9 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('user', JSON.stringify(response.user));
       set({ token: response.token, user: response.user, isLoading: false });
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Login failed';
+      const message = parseApiError(err, 'Login failed');
       set({ error: message, isLoading: false });
     }
   },
@@ -60,9 +59,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('user', JSON.stringify(response.user));
       set({ token: response.token, user: response.user, isLoading: false });
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Registration failed';
+      const message = parseApiError(err, 'Registration failed');
       set({ error: message, isLoading: false });
     }
   },

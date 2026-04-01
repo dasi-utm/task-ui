@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { taskService, type GetTasksParams } from '../services/api';
 import type { TaskDto, CreateTaskDto, UpdateTaskDto } from '../types/task';
 import type { PagedResult } from '../types/api';
+import { parseApiError } from '../utils/parseApiError';
 
 interface TaskState {
   tasks: TaskDto[];
@@ -71,9 +72,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       });
       set({ tasks: result.data, total: result.total, isLoading: false });
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to load tasks';
+      const message = parseApiError(err, 'Failed to load tasks');
       set({ error: message, isLoading: false });
     }
   },
@@ -97,9 +96,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         return { tasks: [task, ...state.tasks], total: state.total + 1, isLoading: false };
       });
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to create task';
+      const message = parseApiError(err, 'Failed to create task');
       set({ error: message, isLoading: false });
     }
   },
@@ -114,9 +111,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         isLoading: false,
       }));
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to update task';
+      const message = parseApiError(err, 'Failed to update task');
       set({ error: message, isLoading: false });
     }
   },
@@ -130,9 +125,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         selectedTask: state.selectedTask?.id === id ? null : state.selectedTask,
       }));
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to delete task';
+      const message = parseApiError(err, 'Failed to delete task');
       set({ error: message });
     }
   },
@@ -144,9 +137,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         tasks: state.tasks.map((t) => (t.id === id ? updated : t)),
       }));
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to change status';
+      const message = parseApiError(err, 'Failed to change status');
       set({ error: message });
     }
   },
@@ -158,9 +149,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         tasks: state.tasks.map((t) => (t.id === id ? updated : t)),
       }));
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to assign task';
+      const message = parseApiError(err, 'Failed to assign task');
       set({ error: message });
     }
   },
