@@ -47,7 +47,8 @@ export async function startConnection(): Promise<void> {
     connection = null;
   }
 
-  const url = import.meta.env.VITE_SIGNALR_URL || 'http://localhost:3001/hubs/tasks';
+  const gateway = import.meta.env.VITE_GATEWAY_URL ?? '';
+  const url = `${gateway}/hubs/tasks`;
 
   const conn = new HubConnectionBuilder()
     .withUrl(url, {

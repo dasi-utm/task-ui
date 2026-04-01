@@ -11,8 +11,13 @@ import type {
 } from '../types/task';
 import type { TaskMetrics, TrendPoint, PerformanceMetrics } from '../types/analytics';
 
+// Single gateway origin — empty string means relative paths (works with Vite proxy in dev
+// and with nginx proxy in production). Override via VITE_GATEWAY_URL if the gateway lives
+// on a different origin.
+const GATEWAY = import.meta.env.VITE_GATEWAY_URL ?? '';
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1',
+  baseURL: `${GATEWAY}/api/v1`,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -121,25 +126,25 @@ export const adminService = {
   },
 };
 
-// Analytics (separate microservice on port 3003)
+// Analytics — routed through gateway: /analytics/* → task-analytics /api/analytics/*
 const analyticsClient = axios.create({
-  baseURL: import.meta.env.VITE_ANALYTICS_URL || 'http://localhost:3003/api',
+  baseURL: `${GATEWAY}/analytics`,
   headers: { 'Content-Type': 'application/json' },
 });
 
 export const analyticsService = {
   getMetrics: async (): Promise<TaskMetrics> => {
-    const { data } = await analyticsClient.get<TaskMetrics>('/analytics/metrics');
+    const { data } = await analyticsClient.get<TaskMetrics>('/metrics');
     return data;
   },
   getTrends: async (hours = 24): Promise<TrendPoint[]> => {
-    const { data } = await analyticsClient.get<TrendPoint[]>('/analytics/trends', {
+    const { data } = await analyticsClient.get<TrendPoint[]>('/trends', {
       params: { hours },
     });
     return data;
   },
   getPerformance: async (): Promise<PerformanceMetrics> => {
-    const { data } = await analyticsClient.get<PerformanceMetrics>('/analytics/performance');
+    const { data } = await analyticsClient.get<PerformanceMetrics>('/performance');
     return data;
   },
 };
