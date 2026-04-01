@@ -109,7 +109,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Run unit tests
-        run: npm test -- --watchAll=false --coverage
+        run: npm test --coverage
         env:
           CI: true
 
