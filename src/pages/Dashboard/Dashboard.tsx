@@ -89,7 +89,7 @@ export const Dashboard = () => {
           </span>
         </div>
         <div className="header-right">
-          <Link to="/analytics" className="btn-secondary">Analytics</Link>
+          <Link to="/metrics" className="btn-secondary">Metrics</Link>
           <span className="user-info">{user?.firstName} {user?.lastName}</span>
           <button className="btn-secondary" onClick={logout}>Sign Out</button>
         </div>

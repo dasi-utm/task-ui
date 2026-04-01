@@ -6,7 +6,6 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Analytics } from './pages/Analytics';
-import { JiraWidgetDemo } from './pages/JiraWidgetDemo';
 
 export const App = () => {
   const hydrate = useAuthStore((s) => s.hydrate);
@@ -29,7 +28,6 @@ export const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/jira-widget" element={<JiraWidgetDemo />} />
         <Route
           path="/metrics"
           element={
