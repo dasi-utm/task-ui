@@ -157,7 +157,7 @@ export const Dashboard = () => {
             </select>
             <input
               type="date"
-              value={form.dueDate ?? ''}
+              value={form.dueDate ? form.dueDate.split('T')[0] : ''}
               onChange={(e) =>
                 setForm({ ...form, dueDate: e.target.value ? e.target.value + 'T00:00:00Z' : null })
               }

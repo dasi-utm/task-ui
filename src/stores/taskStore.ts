@@ -92,7 +92,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const task = await taskService.create(dto);
-      set((state) => ({ tasks: [task, ...state.tasks], total: state.total + 1, isLoading: false }));
+      set((state) => {
+        if (state.tasks.some((t) => t.id === task.id)) return { isLoading: false };
+        return { tasks: [task, ...state.tasks], total: state.total + 1, isLoading: false };
+      });
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||

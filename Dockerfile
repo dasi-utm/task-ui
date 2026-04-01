@@ -1,9 +1,10 @@
-FROM node:20-alpine AS build
+FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
 
+FROM deps AS build
 COPY . .
 
 ARG VITE_API_URL

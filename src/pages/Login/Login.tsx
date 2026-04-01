@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import './Login.css';
@@ -8,6 +8,8 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const { login, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => { clearError(); }, [clearError]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import type { TaskDto } from '../types/task';
 
 let connection: HubConnection | null = null;
@@ -35,11 +35,21 @@ function mapState(state: HubConnectionState): ConnectionStatus {
 }
 
 export async function startConnection(): Promise<void> {
-  if (connection?.state === HubConnectionState.Connected) return;
+  if (
+    connection?.state === HubConnectionState.Connected ||
+    connection?.state === HubConnectionState.Connecting ||
+    connection?.state === HubConnectionState.Reconnecting
+  )
+    return;
+
+  if (connection) {
+    await connection.stop();
+    connection = null;
+  }
 
   const url = import.meta.env.VITE_SIGNALR_URL || 'http://localhost:3001/hubs/tasks';
 
-  connection = new HubConnectionBuilder()
+  const conn = new HubConnectionBuilder()
     .withUrl(url, {
       accessTokenFactory: getToken,
     })
@@ -47,34 +57,49 @@ export async function startConnection(): Promise<void> {
       nextRetryDelayInMilliseconds: (ctx) =>
         Math.min(1000 * Math.pow(2, ctx.previousRetryCount), 30000),
     })
+    .configureLogging(LogLevel.None)
     .build();
 
-  connection.on('TaskCreated', (task: TaskDto) => onTaskCreated?.(task));
-  connection.on('TaskUpdated', (task: TaskDto) => onTaskUpdated?.(task));
-  connection.on('TaskDeleted', (taskId: string) => onTaskDeleted?.(taskId));
-  connection.on('TaskStatusChanged', (taskId: string, newStatus: string) =>
+  connection = conn;
+
+  conn.on('TaskCreated', (task: TaskDto) => onTaskCreated?.(task));
+  conn.on('TaskUpdated', (task: TaskDto) => onTaskUpdated?.(task));
+  conn.on('TaskDeleted', (taskId: string) => onTaskDeleted?.(taskId));
+  conn.on('TaskStatusChanged', (taskId: string, newStatus: string) =>
     onTaskStatusChanged?.(taskId, newStatus)
   );
 
-  connection.onreconnecting(() => onStatusChange?.('reconnecting'));
-  connection.onreconnected(() => onStatusChange?.('connected'));
-  connection.onclose(() => onStatusChange?.('disconnected'));
+  conn.onreconnecting(() => onStatusChange?.('reconnecting'));
+  conn.onreconnected(() => onStatusChange?.('connected'));
+  conn.onclose(() => onStatusChange?.('disconnected'));
 
   onStatusChange?.('connecting');
 
   try {
-    await connection.start();
-    onStatusChange?.('connected');
+    await conn.start();
+    if (connection === conn) {
+      onStatusChange?.('connected');
+    }
   } catch (err) {
+    // Ignore abort errors from React strict mode cleanup stopping the connection
+    // during negotiation — the next mount will reconnect successfully.
+    if (connection !== conn) return;
+    const message = err instanceof Error ? err.message : '';
+    if (message.includes('stopped during negotiation')) return;
     console.error('SignalR connection failed:', err);
     onStatusChange?.('disconnected');
   }
 }
 
 export async function stopConnection(): Promise<void> {
-  if (connection) {
-    await connection.stop();
-    connection = null;
+  const conn = connection;
+  connection = null;
+  if (conn) {
+    try {
+      await conn.stop();
+    } catch {
+      // ignore errors during stop
+    }
     onStatusChange?.('disconnected');
   }
 }
