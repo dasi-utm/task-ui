@@ -11,13 +11,8 @@ import type {
 } from '../types/task';
 import type { TaskMetrics, TrendPoint, PerformanceMetrics } from '../types/analytics';
 
-// Single gateway origin — empty string means relative paths (works with Vite proxy in dev
-// and with nginx proxy in production). Override via VITE_GATEWAY_URL if the gateway lives
-// on a different origin.
-const GATEWAY = import.meta.env.VITE_GATEWAY_URL ?? '';
-
 const apiClient = axios.create({
-  baseURL: `${GATEWAY}/api/v1`,
+  baseURL: import.meta.env.VITE_API_URL ?? '/api/v1',
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -126,9 +121,8 @@ export const adminService = {
   },
 };
 
-// Analytics — routed through gateway: /analytics/* → task-analytics /api/analytics/*
 const analyticsClient = axios.create({
-  baseURL: `${GATEWAY}/analytics`,
+  baseURL: '/analytics',
   headers: { 'Content-Type': 'application/json' },
 });
 

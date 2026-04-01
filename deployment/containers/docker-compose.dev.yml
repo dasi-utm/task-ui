@@ -7,8 +7,11 @@ services:
     ports:
       - "3000:3000"
     environment: # move to deployment/config
-      VITE_API_URL: http://localhost:3001/api/v1
-      VITE_SIGNALR_URL: http://localhost:3001/hubs/tasks
+      TASK_API_URL: http://api:3001
+      TASK_ANALYTICS_URL: http://task-analytics:3003
+      TASK_PROCESSING_URL: http://task-processing:3002
+      VITE_API_URL: /api/v1
+      VITE_SIGNALR_URL: /hubs/tasks
     volumes:
       - ../../:/app
       - /app/node_modules

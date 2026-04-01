@@ -9,3 +9,9 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
+    networks:
+      - taskflow-net
+
+networks:
+  taskflow-net:
+    external: true

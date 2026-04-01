@@ -7,25 +7,19 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint ",
-    "preview": "vite preview",
-    "gateway": "tsx server/gateway.ts",
-    "gateway:dev": "tsx watch server/gateway.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
     "axios": "^1.13.6",
-    "express": "^4.21.2",
-    "http-proxy-middleware": "^3.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-intl": "^6.8.9",
     "react-router-dom": "^7.13.1",
-    "tsx": "^4.19.2",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
-    "@types/express": "^5.0.3",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
