@@ -1,7 +1,4 @@
-import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr';
 import type { TaskDto } from '../types/task';
-
-let connection: HubConnection | null = null;
 
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
 
@@ -10,6 +7,16 @@ type TaskUpdatedCallback = (task: TaskDto) => void;
 type TaskDeletedCallback = (taskId: string) => void;
 type TaskStatusChangedCallback = (taskId: string, newStatus: string) => void;
 type StatusChangeCallback = (status: ConnectionStatus) => void;
+
+interface WsMessage {
+  type: string;
+  payload: unknown;
+}
+
+let ws: WebSocket | null = null;
+let retryCount = 0;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+let stopped = false;
 
 let onTaskCreated: TaskCreatedCallback | null = null;
 let onTaskUpdated: TaskUpdatedCallback | null = null;
@@ -21,67 +28,100 @@ function getToken(): string {
   return localStorage.getItem('token') ?? '';
 }
 
-function mapState(state: HubConnectionState): ConnectionStatus {
-  switch (state) {
-    case HubConnectionState.Connected:
-      return 'connected';
-    case HubConnectionState.Connecting:
-      return 'connecting';
-    case HubConnectionState.Reconnecting:
-      return 'reconnecting';
-    default:
-      return 'disconnected';
+export function getRetryDelay(count: number): number {
+  return Math.min(1000 * Math.pow(2, count), 30000);
+}
+
+function handleMessage(msg: WsMessage): void {
+  switch (msg.type) {
+    case 'TaskCreated':
+      onTaskCreated?.(msg.payload as TaskDto);
+      break;
+    case 'TaskUpdated':
+      onTaskUpdated?.(msg.payload as TaskDto);
+      break;
+    case 'TaskDeleted':
+      onTaskDeleted?.(msg.payload as string);
+      break;
+    case 'TaskStatusChanged': {
+      const p = msg.payload as { taskId: string; newStatus: string };
+      onTaskStatusChanged?.(p.taskId, p.newStatus);
+      break;
+    }
   }
 }
 
-export async function startConnection(): Promise<void> {
-  if (connection?.state === HubConnectionState.Connected) return;
+function connect(): void {
+  const base = import.meta.env.VITE_SIGNALR_URL ?? '/hubs/tasks';
+  const token = getToken();
+  const url = token ? `${base}?access_token=${encodeURIComponent(token)}` : base;
 
-  const url = `${import.meta.env.VITE_SIGNALR_URL ?? '/hubs/tasks'}`;
+  onStatusChange?.(retryCount === 0 ? 'connecting' : 'reconnecting');
 
-  connection = new HubConnectionBuilder()
-    .withUrl(url, {
-      accessTokenFactory: getToken,
-    })
-    .withAutomaticReconnect({
-      nextRetryDelayInMilliseconds: (ctx) =>
-        Math.min(1000 * Math.pow(2, ctx.previousRetryCount), 30000),
-    })
-    .build();
+  ws = new WebSocket(url);
 
-  connection.on('TaskCreated', (task: TaskDto) => onTaskCreated?.(task));
-  connection.on('TaskUpdated', (task: TaskDto) => onTaskUpdated?.(task));
-  connection.on('TaskDeleted', (taskId: string) => onTaskDeleted?.(taskId));
-  connection.on('TaskStatusChanged', (taskId: string, newStatus: string) =>
-    onTaskStatusChanged?.(taskId, newStatus)
-  );
-
-  connection.onreconnecting(() => onStatusChange?.('reconnecting'));
-  connection.onreconnected(() => onStatusChange?.('connected'));
-  connection.onclose(() => onStatusChange?.('disconnected'));
-
-  onStatusChange?.('connecting');
-
-  try {
-    await connection.start();
+  ws.onopen = () => {
+    retryCount = 0;
     onStatusChange?.('connected');
-  } catch (err) {
-    console.error('SignalR connection failed:', err);
-    onStatusChange?.('disconnected');
+  };
+
+  ws.onmessage = (event: MessageEvent) => {
+    try {
+      const msg: WsMessage = JSON.parse(event.data as string);
+      handleMessage(msg);
+    } catch {
+      // ignore malformed messages
+    }
+  };
+
+  ws.onclose = () => {
+    ws = null;
+    if (stopped) {
+      onStatusChange?.('disconnected');
+      return;
+    }
+    const delay = getRetryDelay(retryCount);
+    retryCount += 1;
+    onStatusChange?.('reconnecting');
+    retryTimer = setTimeout(() => connect(), delay);
+  };
+}
+
+export function startConnection(): void {
+  stopped = false;
+  if (retryTimer) {
+    clearTimeout(retryTimer);
+    retryTimer = null;
   }
+  if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
+    return;
+  }
+  connect();
 }
 
 export async function stopConnection(): Promise<void> {
-  if (connection) {
-    await connection.stop();
-    connection = null;
-    onStatusChange?.('disconnected');
+  stopped = true;
+  if (retryTimer) {
+    clearTimeout(retryTimer);
+    retryTimer = null;
   }
+  if (ws) {
+    ws.close();
+    ws = null;
+  }
+  onStatusChange?.('disconnected');
 }
 
 export function getConnectionStatus(): ConnectionStatus {
-  if (!connection) return 'disconnected';
-  return mapState(connection.state);
+  if (!ws) return 'disconnected';
+  switch (ws.readyState) {
+    case WebSocket.CONNECTING:
+      return 'connecting';
+    case WebSocket.OPEN:
+      return 'connected';
+    default:
+      return 'disconnected';
+  }
 }
 
 export function registerCallbacks(callbacks: {
@@ -90,10 +130,26 @@ export function registerCallbacks(callbacks: {
   onTaskDeleted?: TaskDeletedCallback;
   onTaskStatusChanged?: TaskStatusChangedCallback;
   onStatusChange?: StatusChangeCallback;
-}) {
+}): void {
   onTaskCreated = callbacks.onTaskCreated ?? null;
   onTaskUpdated = callbacks.onTaskUpdated ?? null;
   onTaskDeleted = callbacks.onTaskDeleted ?? null;
   onTaskStatusChanged = callbacks.onTaskStatusChanged ?? null;
   onStatusChange = callbacks.onStatusChange ?? null;
+}
+
+/** Reset all module-level state — for use in tests only. */
+export function _resetForTesting(): void {
+  if (retryTimer) {
+    clearTimeout(retryTimer);
+    retryTimer = null;
+  }
+  ws = null;
+  retryCount = 0;
+  stopped = false;
+  onTaskCreated = null;
+  onTaskUpdated = null;
+  onTaskDeleted = null;
+  onTaskStatusChanged = null;
+  onStatusChange = null;
 }
